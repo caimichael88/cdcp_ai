@@ -1,0 +1,311 @@
+"""
+Complete CDCP Ingestion Pipeline
+Scrapes CDCP websites and ingests into RAG system
+"""
+
+import logging
+from typing import List
+from dataclasses import dataclass
+
+from scraper_service import WebScraperService, DocumentChunker, ScrapedDocument
+from rag_controller import create_rag_controller, Document
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+
+class CDCPIngestionPipeline:
+    """
+    Complete pipeline for scraping CDCP websites and ingesting into RAG system
+    """
+    
+    def __init__(
+        self,
+        cdcp_urls: List[str],
+        max_pages: int = 100,
+        chunk_size: int = 512,
+        embedding_provider: str = "sentence-transformers",
+        collection_name: str = "cdcp_documents"
+    ):
+        """
+        Initialize ingestion pipeline
+        
+        Args:
+            cdcp_urls: List of CDCP URLs to scrape
+            max_pages: Maximum pages to scrape
+            chunk_size: Size of document chunks in tokens
+            embedding_provider: "sentence-transformers" or "openai"
+            collection_name: Name of vector DB collection
+        """
+        self.cdcp_urls = cdcp_urls
+        self.max_pages = max_pages
+        self.chunk_size = chunk_size
+        self.embedding_provider = embedding_provider
+        self.collection_name = collection_name
+        
+        # Initialize services
+        self.scraper = None
+        self.chunker = None
+        self.rag_controller = None
+        
+        logger.info("CDCP Ingestion Pipeline initialized")
+    
+    def initialize_services(self):
+        """Initialize all required services"""
+        logger.info("Initializing services...")
+        
+        # Create scraper service
+        self.scraper = WebScraperService(
+            base_urls=self.cdcp_urls,
+            delay=1.0,  # Be respectful to servers
+            max_pages=self.max_pages
+        )
+        logger.info("✓ Scraper service created")
+        
+        # Create chunker
+        self.chunker = DocumentChunker(
+            chunk_size=self.chunk_size,
+            overlap=50
+        )
+        logger.info("✓ Chunker created")
+        
+        # Create RAG controller
+        self.rag_controller = create_rag_controller(
+            provider=self.embedding_provider,
+            collection_name=self.collection_name,
+            similarity_threshold=0.7
+        )
+        logger.info("✓ RAG controller created")
+        
+        logger.info("All services initialized successfully!")
+    
+    def scrape_websites(self) -> List[ScrapedDocument]:
+        """
+        Scrape CDCP websites
+        
+        Returns:
+            List of scraped documents
+        """
+        logger.info("=" * 60)
+        logger.info("STEP 1: Scraping CDCP Websites")
+        logger.info("=" * 60)
+        
+        documents = self.scraper.crawl()
+        
+        logger.info(f"✓ Scraped {len(documents)} documents")
+        return documents
+    
+    def chunk_documents(self, documents: List[ScrapedDocument]) -> List[ScrapedDocument]:
+        """
+        Chunk documents into smaller pieces
+        
+        Args:
+            documents: List of scraped documents
+            
+        Returns:
+            List of chunked documents
+        """
+        logger.info("=" * 60)
+        logger.info("STEP 2: Chunking Documents")
+        logger.info("=" * 60)
+        
+        all_chunks = []
+        for doc in documents:
+            chunks = self.chunker.chunk_document(doc)
+            all_chunks.extend(chunks)
+        
+        logger.info(f"✓ Created {len(all_chunks)} chunks from {len(documents)} documents")
+        return all_chunks
+    
+    def ingest_to_rag(self, documents: List[ScrapedDocument]) -> int:
+        """
+        Ingest documents into RAG system
+        
+        Args:
+            documents: List of documents to ingest
+            
+        Returns:
+            Number of documents ingested
+        """
+        logger.info("=" * 60)
+        logger.info("STEP 3: Ingesting into RAG System")
+        logger.info("=" * 60)
+        
+        # Convert ScrapedDocument to Document format
+        rag_documents = []
+        for doc in documents:
+            rag_doc = Document(
+                id=doc.doc_id,
+                content=doc.content,
+                metadata={
+                    "url": doc.url,
+                    "title": doc.title,
+                    "section": doc.section or "general",
+                    "language": doc.language,
+                    "last_updated": doc.last_updated or "unknown"
+                }
+            )
+            rag_documents.append(rag_doc)
+        
+        # Ingest into RAG system
+        count = self.rag_controller.add_documents(
+            rag_documents,
+            batch_size=100
+        )
+        
+        logger.info(f"✓ Ingested {count} documents into RAG system")
+        return count
+    
+    def run(self) -> dict:
+        """
+        Run the complete ingestion pipeline
+        
+        Returns:
+            Dictionary with pipeline statistics
+        """
+        logger.info("\n" + "=" * 60)
+        logger.info("CDCP INGESTION PIPELINE STARTING")
+        logger.info("=" * 60 + "\n")
+        
+        try:
+            # Initialize services
+            self.initialize_services()
+            
+            # Step 1: Scrape websites
+            scraped_docs = self.scrape_websites()
+            
+            if not scraped_docs:
+                logger.error("No documents were scraped!")
+                return {"success": False, "error": "No documents scraped"}
+            
+            # Step 2: Chunk documents
+            chunked_docs = self.chunk_documents(scraped_docs)
+            
+            # Step 3: Ingest into RAG
+            ingested_count = self.ingest_to_rag(chunked_docs)
+            
+            # Get final statistics
+            scraper_stats = self.scraper.get_stats()
+            rag_stats = self.rag_controller.get_stats()
+            
+            # Final report
+            logger.info("\n" + "=" * 60)
+            logger.info("INGESTION PIPELINE COMPLETE!")
+            logger.info("=" * 60)
+            logger.info(f"\nScraping Statistics:")
+            logger.info(f"  - Pages scraped: {scraper_stats['pages_scraped']}")
+            logger.info(f"  - Pages failed: {scraper_stats['pages_failed']}")
+            logger.info(f"  - Success rate: {scraper_stats['success_rate']:.1%}")
+            logger.info(f"  - Total time: {scraper_stats['total_time']:.2f}s")
+            
+            logger.info(f"\nDocument Statistics:")
+            logger.info(f"  - Original documents: {len(scraped_docs)}")
+            logger.info(f"  - After chunking: {len(chunked_docs)}")
+            logger.info(f"  - Ingested: {ingested_count}")
+            
+            logger.info(f"\nRAG System Statistics:")
+            logger.info(f"  - Total documents in DB: {rag_stats['vector_database']['document_count']}")
+            logger.info(f"  - Embedding provider: {rag_stats['embedding_service']['model_name']}")
+            
+            logger.info("\n" + "=" * 60)
+            
+            return {
+                "success": True,
+                "scraped_documents": len(scraped_docs),
+                "chunked_documents": len(chunked_docs),
+                "ingested_documents": ingested_count,
+                "scraper_stats": scraper_stats,
+                "rag_stats": rag_stats
+            }
+            
+        except Exception as e:
+            logger.error(f"Pipeline failed: {e}", exc_info=True)
+            return {
+                "success": False,
+                "error": str(e)
+            }
+    
+    def test_rag_system(self):
+        """Test the RAG system with sample queries"""
+        logger.info("\n" + "=" * 60)
+        logger.info("TESTING RAG SYSTEM")
+        logger.info("=" * 60)
+        
+        test_queries = [
+            "What are the CDCP eligibility requirements?",
+            "What dental services are covered?",
+            "How do I apply for CDCP?",
+            "What is the income limit for CDCP?"
+        ]
+        
+        for i, query in enumerate(test_queries, 1):
+            logger.info(f"\n[Test {i}] Query: '{query}'")
+            
+            try:
+                results = self.rag_controller.search(query, n_results=3)
+                
+                logger.info(f"Found {len(results)} results:")
+                for j, result in enumerate(results, 1):
+                    logger.info(f"  {j}. {result.metadata['title']}")
+                    logger.info(f"     Score: {result.relevance_score:.2%}")
+                    logger.info(f"     Section: {result.metadata.get('section', 'N/A')}")
+                    logger.info(f"     Preview: {result.content[:100]}...")
+                    
+            except Exception as e:
+                logger.error(f"Query failed: {e}")
+        
+        logger.info("\n" + "=" * 60)
+
+
+def main():
+    """Main function to run the ingestion pipeline"""
+    
+    # CDCP URLs to scrape
+    CDCP_URLS = [
+        # Main CDCP pages
+        "https://www.canada.ca/en/services/benefits/dental/dental-care-plan.html",
+        "https://www.canada.ca/en/services/benefits/dental/dental-care-plan/eligibility.html",
+        "https://www.canada.ca/en/services/benefits/dental/dental-care-plan/coverage.html",
+        "https://www.canada.ca/en/services/benefits/dental/dental-care-plan/apply.html",
+        
+        # Additional relevant pages (add more as needed)
+        # "https://www.canada.ca/en/services/benefits/dental/dental-care-plan/faq.html",
+    ]
+    
+    # Configuration
+    MAX_PAGES = 50  # Limit for testing (increase for production)
+    CHUNK_SIZE = 512  # Tokens per chunk
+    EMBEDDING_PROVIDER = "sentence-transformers"  # or "openai"
+    COLLECTION_NAME = "cdcp_documents"
+    
+    # Create and run pipeline
+    pipeline = CDCPIngestionPipeline(
+        cdcp_urls=CDCP_URLS,
+        max_pages=MAX_PAGES,
+        chunk_size=CHUNK_SIZE,
+        embedding_provider=EMBEDDING_PROVIDER,
+        collection_name=COLLECTION_NAME
+    )
+    
+    # Run ingestion
+    results = pipeline.run()
+    
+    if results["success"]:
+        # Test the system
+        pipeline.test_rag_system()
+        
+        logger.info("\n✓ Pipeline completed successfully!")
+        logger.info(f"✓ You can now use the RAG system with {results['ingested_documents']} documents")
+        logger.info("\nNext steps:")
+        logger.info("1. Start the API server: python app.py")
+        logger.info("2. Test with: curl -X POST http://localhost:5000/search -H 'Content-Type: application/json' -d '{\"query\": \"CDCP eligibility\"}'")
+    else:
+        logger.error(f"\n✗ Pipeline failed: {results.get('error', 'Unknown error')}")
+
+
+if __name__ == "__main__":
+    main()

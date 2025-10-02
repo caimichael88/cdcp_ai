@@ -1,0 +1,70 @@
+{
+  "name": "api-py",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/api-py/src",
+  "projectType": "application",
+  "targets": {
+    "check-python": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 --version"
+      }
+    },
+    "install": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pip3 install -e .[ai,dev]",
+        "cwd": "apps/api-py"
+      }
+    },
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uvicorn src.main:app --reload --host 0.0.0.0 --port 8001",
+        "cwd": "apps/api-py"
+      },
+      "configurations": {
+        "debug": {
+          "command": "uvicorn src.main:app --reload --host 0.0.0.0 --port 8001 --log-level debug",
+          "cwd": "apps/api-py"
+        }
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pytest",
+        "cwd": "apps/api-py"
+      }
+    },
+    "install-prod": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pip3 install -e .[ai]",
+        "cwd": "apps/api-py"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "flake8 src",
+        "cwd": "apps/api-py"
+      }
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "black src",
+        "cwd": "apps/api-py"
+      }
+    },
+    "type-check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "mypy src",
+        "cwd": "apps/api-py"
+      }
+    }
+  },
+  "tags": []
+}
