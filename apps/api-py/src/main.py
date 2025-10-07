@@ -7,8 +7,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+from .services.asr_service import asr_service
 
-from .controllers import cdcp_controller, health_controller, rag_controller
+from .controllers import cdcp_controller, health_controller, rag_controller, asr_controller
 
 # Load environment variables
 load_dotenv()
@@ -20,7 +21,13 @@ async def lifespan(app: FastAPI):
     # Startup
     print("🚀 Starting CDCP AI API...")
     print("📦 Loading fine-tuned models...")
-    # TODO: Preload your fine-tuned models here
+
+    # Preload Whisper ASR model
+    try:
+        print("📥 Preloading ASR models...")
+        asr_service.preload_default_model()
+    except Exception as e:
+        print(f"⚠️ ASR model preloading failed: {e}")
     yield
     # Shutdown
     print("👋 Shutting down CDCP AI API...")
@@ -51,6 +58,7 @@ app.add_middleware(
 app.include_router(health_controller.router, prefix="/health", tags=["health"])
 app.include_router(cdcp_controller.router, prefix="/cdcp", tags=["cdcp"])
 app.include_router(rag_controller.router, prefix="/rag", tags=["rag"])
+app.include_router(asr_controller.router, prefix="/asr", tags=["asr"])
 
 
 @app.get("/")

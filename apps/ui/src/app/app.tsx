@@ -1,4 +1,5 @@
 import './app.module.css';
+import VoiceChatbot from './components/VoiceChatbot';
 
 export function App() {
   return (
@@ -8,9 +9,7 @@ export function App() {
         <p>Fine-tuned models for CDCP analysis</p>
       </header>
       <main className="app-main">
-        <div className="content">
-          <p>Welcome to CDCP AI - Your prototype is ready!</p>
-        </div>
+        <VoiceChatbot />
       </main>
     </div>
   );

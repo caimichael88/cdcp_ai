@@ -6,7 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["ai", "cdcp", "fine-tuned-models"],
+  "keywords": [
+    "ai",
+    "cdcp",
+    "fine-tuned-models"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
@@ -28,13 +32,14 @@
     "@svgr/webpack": "^8.0.1",
     "@swc-node/register": "~1.9.1",
     "@swc/core": "~1.5.7",
-    "@swc/helpers": "~0.5.11",
+    "@swc/helpers": "^0.5.17",
     "@types/node": "20.19.9",
     "@types/react": "19.0.0",
     "@types/react-dom": "19.0.0",
     "nx": "21.5.2",
     "prettier": "^2.6.2",
     "react-refresh": "^0.10.0",
+    "swc-loader": "^0.2.6",
     "tslib": "^2.3.0",
     "typescript": "~5.9.2",
     "webpack-cli": "^5.1.4"
@@ -44,7 +49,7 @@
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
-    "axios": "^1.6.0",
+    "axios": "^1.12.2",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-router-dom": "6.29.0",
