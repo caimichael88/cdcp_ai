@@ -12,9 +12,9 @@ class ASRService:
     def __init__(self):
         self._models: Dict[str, Any] = {}
         self.available_models = ["tiny", "base", "small", "medium", "large"]
-        self.default_model = "base"
+        self.default_model = "medium"
     
-    def _get_model(self, model_name: str = "base"):
+    def _get_model(self, model_name: str = "medium"):
         """load and cache Whisper model"""
         if model_name not in self.available_models:
             raise ValueError(f"Model {model_name} not available. choose from {self.available_models}")

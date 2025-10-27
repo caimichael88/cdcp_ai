@@ -2,13 +2,20 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .app-header {
-  background-color: #282c34;
-  padding: 2rem;
-  color: white;
-  text-align: center;
+  position: fixed;
+  top: 0;
+  right: 0;
+  padding: 1rem;
+  z-index: 1000;
+}
+
+.app-logo {
+  height: 60px;
+  width: auto;
 }
 
 .app-header h1 {

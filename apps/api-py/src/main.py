@@ -9,10 +9,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from .services.asr_service import asr_service
 
-from .controllers import cdcp_controller, health_controller, rag_controller, asr_controller
+from .controllers import cdcp_controller, health_controller, rag_controller, asr_controller, tts_controller, agent_controller, voice_controller
 
 # Load environment variables
 load_dotenv()
+
+# Disable tokenizers parallelism warning (prevents fork warnings with minimal performance impact)
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 @asynccontextmanager
@@ -55,10 +58,13 @@ app.add_middleware(
 )
 
 # Register routers
-app.include_router(health_controller.router, prefix="/health", tags=["health"])
-app.include_router(cdcp_controller.router, prefix="/cdcp", tags=["cdcp"])
-app.include_router(rag_controller.router, prefix="/rag", tags=["rag"])
-app.include_router(asr_controller.router, prefix="/asr", tags=["asr"])
+app.include_router(health_controller.router)
+app.include_router(cdcp_controller.router)
+app.include_router(rag_controller.router)
+app.include_router(asr_controller.router)
+app.include_router(tts_controller.router)
+app.include_router(agent_controller.router)
+app.include_router(voice_controller.router)
 
 
 @app.get("/")

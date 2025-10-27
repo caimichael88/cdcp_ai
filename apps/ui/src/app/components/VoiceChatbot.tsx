@@ -22,8 +22,8 @@ const VoiceChatbot = () => {
   const mediaRecorderRef = useRef<MediaRecorder | null> (null);
   const audioChunkRef = useRef<Blob[]>([]);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
-  
-  const API_PY_DOMAIN = process.env.NX_API_PY_DOMAIN; 
+
+  const API_PY_DOMAIN = (import.meta as any).env?.VITE_API_PY_DOMAIN || 'http://localhost:8001'; 
 
   const startRecording = useCallback(async () => {
     try{
@@ -78,8 +78,8 @@ const VoiceChatbot = () => {
 
       //send audio to /voice/agent-with-text endpoint for LangGraph processing with text response
 
-      const voiceResponse = await axios.post(`$(API_PY_DOMAIN)/voice/agent-with-text`, formData);
-      const response_data = voiceResponse.data();
+      const voiceResponse = await axios.post(`${API_PY_DOMAIN}/voice/agent-with-text`, formData);
+      const response_data = voiceResponse.data;
 
       //Add user message with actual transcription
       const userMessageObj: Message = {

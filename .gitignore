@@ -151,3 +151,5 @@ build/
 # Nx
 .nx/cache
 .nx/workspace-data
+apps/api-py/finetuned_cdcp_mps_aggressive/
+*.pptx

@@ -1,16 +1,14 @@
 import './app.module.css';
-import VoiceChatbot from './components/VoiceChatbot';
+import ChatInterface from './components/ChatInterface';
+import logo from '../image.png';
 
 export function App() {
   return (
     <div className="app">
-      <header className="app-header">
-        <h1>CDCP AI</h1>
-        <p>Fine-tuned models for CDCP analysis</p>
-      </header>
-      <main className="app-main">
-        <VoiceChatbot />
-      </main>
+      <div className="app-header" style={{ position: 'fixed', top: 0, right: 0, padding: '1rem', zIndex: 1000 }}>
+        <img src={logo} alt="Logo" className="app-logo" style={{ height: '60px', width: 'auto' }} />
+      </div>
+      <ChatInterface />
     </div>
   );
 }
