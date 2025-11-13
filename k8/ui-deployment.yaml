@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cdcp-ui
+spec:
+  replicas: 2   # Run 2 copies for redundancy
+  selector:      # Fixed: removed 's'
+    matchLabels:
+      app: cdcp-ui
+  template:
+    metadata:
+      labels:    # Fixed: added 's'
+        app: cdcp-ui
+    spec:
+      containers:
+        - name: cdcp-ui
+          image: cdcp-ui:latest
+          imagePullPolicy: Never  # Use local image, don't pull from registry
+          ports:
+          - containerPort: 80  # Fixed: nginx serves on port 80, not 8080
+          

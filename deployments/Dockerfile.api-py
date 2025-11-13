@@ -1,0 +1,26 @@
+# ================================
+# Python FastAPI Backend
+# ================================
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Copy pyproject.toml and README.md (required by pyproject.toml)
+COPY apps/api-py/pyproject.toml ./
+COPY apps/api-py/README.md ./
+
+# Install base dependencies first
+RUN pip install --no-cache-dir .
+
+# Copy application source code
+COPY apps/api-py/src ./src
+
+# Install optional dependencies (fixed typo: scraping not scrpaing)
+# Note: This includes transformers, torch, etc. - will make image large
+RUN pip install --no-cache-dir ".[ai,scraping]"
+
+# Expose FastAPI port (from main.py:82)
+EXPOSE 8001
+
+# Start uvicorn server
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8001"]

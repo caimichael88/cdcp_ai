@@ -1,0 +1,56 @@
+# Node modules (will be installed in container)
+node_modules/
+npm-debug.log
+
+# Build outputs
+dist/
+build/
+*.log
+
+# Git
+.git/
+.gitignore
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files (don't copy secrets)
+.env
+.env.local
+.env.*.local
+
+# Python cache files
+*.pyc
+__pycache__/
+*.py[cod]
+venv/
+*.egg-info/
+
+# ChromaDB
+chroma_db/
+
+# Test files
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+coverage/
+
+# Documentation
+*.md
+README*
+docs/
+
+# Misc
+*.pptx
+*.png
+*.jpg
+*.jpeg
+.nx/

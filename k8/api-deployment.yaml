@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cdcp-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cdcp-api
+  template:
+    metadata:
+      labels:
+        app: cdcp-api
+    spec:
+      containers:
+      - name: cdcp-api
+        image: cdcp-api:latest
+        imagePullPolicy: Never  # Use local image, don't pull from registry
+        ports:
+        - containerPort: 8001
+        

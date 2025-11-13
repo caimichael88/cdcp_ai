@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cdcp-ui-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: cdcp-ui
+  ports:
+  - protocol: TCP
+    port: 80            # External port (what users connect to)
+    targetPort: 80      # Container port (must match deployment containerPort)
+    
