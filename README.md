@@ -5,7 +5,7 @@ AI Soluction for Canadian Dental Care Plan
 cdcp_ai is an AI-powered tool designed to support tasks related to the Canadian Dental Care Plan (CDCP).
 It provides automated reasoning, data extraction, form assistance, and decision support using modern AI models.
 
-The goal of this project is to streamline how users interact with CDCP-related information — reducing manual work and helping users interpret complex eligibility rules, documentation, and responses.
+The goal of this project is to streamline how users interact with CDCP-related information, reducing manual work and helping users interpret complex eligibility rules, documentation, and responses.
 
 
 1. AI-Powered Eligibility Assistance
